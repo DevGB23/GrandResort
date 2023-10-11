@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Resort_Web.Models.DTOs
 {
-    public class VillaDTO
+    public class VillaCreateDTO
     {
 
         public int Id { get; set; }

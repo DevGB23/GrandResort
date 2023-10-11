@@ -5,7 +5,7 @@ namespace Resort_Web.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Details { get; set; } = string.Empty;
-        public string Rate { get; set; } = string.Empty;
+        public double Rate { get; set; }
         public int SqFt { get; set; }
         public int Occupancy { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
