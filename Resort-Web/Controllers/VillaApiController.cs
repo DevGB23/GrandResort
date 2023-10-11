@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,18 +14,21 @@ namespace Resort_Web.Controllers
     {
 
         // private readonly ILogging _logger;
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _db = null!;
-        public VillaAPIController (ApplicationDbContext db)
+        public VillaAPIController (ApplicationDbContext db, IMapper mapper)
         {
             // _logger = logger;
             _db = db;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
-            return Ok(await _db.Villas.ToListAsync());
+            IEnumerable<Villa> villaList = await _db.Villas.ToListAsync();
+            return Ok(_mapper.Map<List<VillaDTO>>(villaList));
         }
 
         [HttpGet("{id:int}", Name = "GetVilla")]
@@ -45,7 +49,7 @@ namespace Resort_Web.Controllers
                return NotFound();
             }
 
-            return Ok(villa);
+            return Ok(_mapper.Map<VillaDTO>(villa));
         }
 
         [HttpDelete("{id:int}", Name = "DeleteVilla")]
@@ -76,9 +80,9 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateVilla(int id, [FromBody]VillaUpdateDTO villaDTO)
+        public async Task<IActionResult> UpdateVilla(int id, [FromBody]VillaUpdateDTO updateDTO)
         {
-            if ( villaDTO == null ||  id != villaDTO.Id)
+            if ( updateDTO == null ||  id != updateDTO.Id)
             {
                 return BadRequest();
             }
@@ -88,16 +92,7 @@ namespace Resort_Web.Controllers
                 return BadRequest();
             }
 
-            Villa villaModel = new (){
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                Id = villaDTO.Id,
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Rate = villaDTO.Rate,
-                Occupancy = villaDTO.Occupancy,
-                SqFt = villaDTO.SqFt
-            };
+            Villa villaModel = _mapper.Map<Villa>(updateDTO);
             
             if ( villaModel is null )
             {
@@ -127,38 +122,20 @@ namespace Resort_Web.Controllers
                 return BadRequest();
             }
 
+            
             var villa = await _db.Villas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
+
+            VillaUpdateDTO villaDTOModel = _mapper.Map<VillaUpdateDTO>(villa);
 
             if ( villa is null )
             {
                return NotFound();
             }
 
-            VillaUpdateDTO villaDTOModel = new (){
-                Amenity = villa.Amenity,
-                Details = villa.Details,
-                Id = villa.Id,
-                ImageUrl = villa.ImageUrl,
-                Name = villa.Name,
-                Rate = villa.Rate,
-                Occupancy = villa.Occupancy,
-                SqFt = villa.SqFt
-            };
-
             patchDTO.ApplyTo(villaDTOModel, ModelState);
 
-            Villa villaModel = new (){
-                Amenity = villaDTOModel.Amenity,
-                Details = villaDTOModel.Details,
-                Id = villaDTOModel.Id,
-                ImageUrl = villaDTOModel.ImageUrl,
-                Name = villaDTOModel.Name,
-                Rate = villaDTOModel.Rate,
-                Occupancy = villaDTOModel.Occupancy,
-                SqFt = villaDTOModel.SqFt
-            };
+            Villa villaModel = _mapper.Map<Villa>(villaDTOModel);
 
-            
             _db.Villas.Update(villaModel);
             await _db.SaveChangesAsync();
 
@@ -174,37 +151,39 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async  Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO villaDTO)
+        public async  Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO createDTO)
         {
             if ( !ModelState.IsValid )
             {
                 return BadRequest(ModelState);
             }
 
-            if (await _db.Villas.FirstOrDefaultAsync(v => v.Name.ToLower() == villaDTO.Name.ToLower()) is not null )
+            if (await _db.Villas.FirstOrDefaultAsync(v => v.Name.ToLower() == createDTO.Name.ToLower()) is not null )
             {
                 ModelState.AddModelError("CustomError", "Villa already exist!");
                 return BadRequest(ModelState);
             }
 
-            if ( villaDTO is null )
+            if ( createDTO is null )
             {
-                return BadRequest(villaDTO);
+                return BadRequest(createDTO);
             }
             
-            Villa model = new Villa (){
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,                
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Rate = villaDTO.Rate,
-                Occupancy = villaDTO.Occupancy,
-                SqFt = villaDTO.SqFt
-            };
-            await _db.Villas.AddAsync(model);
+            Villa villaModel = _mapper.Map<Villa>(createDTO);
+
+            // Villa model = new Villa (){
+            //     Amenity = createDTO.Amenity,
+            //     Details = createDTO.Details,                
+            //     ImageUrl = createDTO.ImageUrl,
+            //     Name = createDTO.Name,
+            //     Rate = createDTO.Rate,
+            //     Occupancy = createDTO.Occupancy,
+            //     SqFt = createDTO.SqFt
+            // };
+            await _db.Villas.AddAsync(villaModel);
             await _db.SaveChangesAsync();
 
-            return CreatedAtRoute("GetVilla", new { id = model.Id }, model);
+            return CreatedAtRoute("GetVilla", new { id = villaModel.Id }, villaModel);
         }
     }
 }

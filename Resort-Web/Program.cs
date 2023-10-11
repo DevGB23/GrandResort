@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Resort_Web.Data;
+using Resort_Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,8 @@ builder.Services.AddControllers(option => {
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 // builder.Services.AddSingleton<ILogging, Logging>();
 
