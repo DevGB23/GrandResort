@@ -22,23 +22,23 @@ namespace Resort_Web.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<VillaDTO>> GetVillas()
+        public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
-            return Ok(_db.Villas.ToList().OrderBy(u => u.Id));
+            return Ok(await _db.Villas.ToListAsync());
         }
 
         [HttpGet("{id:int}", Name = "GetVilla")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<VillaDTO> GetVilla(int id)
+        public async Task<ActionResult<VillaDTO>> GetVilla(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
 
-            var villa = _db.Villas.FirstOrDefault(v => v.Id == id);
+            var villa = await _db.Villas.FirstOrDefaultAsync(v => v.Id == id);
 
             if ( villa is null )
             {
@@ -52,14 +52,14 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult DeleteVilla(int id)
+        public async Task<IActionResult> DeleteVilla(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
 
-            var villa = _db.Villas.FirstOrDefault(v => v.Id == id);
+            var villa = await _db.Villas.FirstOrDefaultAsync(v => v.Id == id);
 
             if ( villa is null )
             {
@@ -67,6 +67,7 @@ namespace Resort_Web.Controllers
             }
 
             _db.Villas.Remove(villa);
+            await _db.SaveChangesAsync();
 
             return NoContent();
         }
@@ -75,7 +76,7 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVilla(int id, [FromBody]VillaUpdateDTO villaDTO)
+        public async Task<IActionResult> UpdateVilla(int id, [FromBody]VillaUpdateDTO villaDTO)
         {
             if ( villaDTO == null ||  id != villaDTO.Id)
             {
@@ -104,7 +105,7 @@ namespace Resort_Web.Controllers
             }
 
             _db.Villas.Update(villaModel);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return NoContent();
         }
@@ -114,7 +115,7 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult PartialUpdateVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
+        public async Task<IActionResult> PartialUpdateVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if ( patchDTO == null ||  id == 0)
             {
@@ -126,7 +127,7 @@ namespace Resort_Web.Controllers
                 return BadRequest();
             }
 
-            var villa = _db.Villas.AsNoTracking().FirstOrDefault(v => v.Id == id);
+            var villa = await _db.Villas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
 
             if ( villa is null )
             {
@@ -159,7 +160,7 @@ namespace Resort_Web.Controllers
 
             
             _db.Villas.Update(villaModel);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             if ( !ModelState.IsValid)
             {
@@ -173,14 +174,14 @@ namespace Resort_Web.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaCreateDTO villaDTO)
+        public async  Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO villaDTO)
         {
             if ( !ModelState.IsValid )
             {
                 return BadRequest(ModelState);
             }
 
-            if ( _db.Villas.FirstOrDefault(v => v.Name.ToLower() == villaDTO.Name.ToLower()) is not null )
+            if (await _db.Villas.FirstOrDefaultAsync(v => v.Name.ToLower() == villaDTO.Name.ToLower()) is not null )
             {
                 ModelState.AddModelError("CustomError", "Villa already exist!");
                 return BadRequest(ModelState);
@@ -200,8 +201,8 @@ namespace Resort_Web.Controllers
                 Occupancy = villaDTO.Occupancy,
                 SqFt = villaDTO.SqFt
             };
-            _db.Villas.Add(model);
-            _db.SaveChanges();
+            await _db.Villas.AddAsync(model);
+            await _db.SaveChangesAsync();
 
             return CreatedAtRoute("GetVilla", new { id = model.Id }, model);
         }
