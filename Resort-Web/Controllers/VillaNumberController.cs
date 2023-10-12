@@ -14,11 +14,13 @@ namespace Resort_Web.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IVillaNumberRepository _repo = null!;
+        private readonly IVillaRepository _repoVilla;
         protected APIResponse _response;
-        public VillaNumberController (IVillaNumberRepository repo, IMapper mapper)
+        public VillaNumberController (IVillaNumberRepository repo, IVillaRepository repoVilla, IMapper mapper)
         {
             // _logger = logger;
             _repo = repo;
+            _repoVilla = repoVilla;
             _mapper = mapper;
             this._response = new ();
         }
@@ -134,6 +136,12 @@ namespace Resort_Web.Controllers
                     return BadRequest(_response);
                 }
 
+                if (await _repoVilla.GetAsync(u => u.Id == updateDTO.VillaId) == null)
+                {
+                    ModelState.AddModelError("ErrorMessages", "Villa ID is Invalid!");
+                    return BadRequest(ModelState);
+                }
+
                 if (id == 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -222,7 +230,13 @@ namespace Resort_Web.Controllers
 
                 if (await _repo.GetAsync(v => v.VillaNo == createDTO.VillaNo) is not null )
                 {
-                    ModelState.AddModelError("CustomError", "Villa Number already exist!");
+                    ModelState.AddModelError("CustomError", "Villa Id is invalid");
+                    return BadRequest(ModelState);
+                }
+
+                if (await _repoVilla.GetAsync(u => u.Id == createDTO.VillaId) == null)
+                {
+                    ModelState.AddModelError("ErrorMessages", "Villa ID is Invalid!");
                     return BadRequest(ModelState);
                 }
 
