@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Resort_Web.Data;
@@ -11,9 +12,11 @@ using Resort_Web.Data;
 namespace Resort_Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231012032219_AddVillaNumbersTableToDb")]
+    partial class AddVillaNumbersTableToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,7 +73,7 @@ namespace Resort_Web.Migrations
                         {
                             Id = 1,
                             Amenity = "",
-                            CreatedAt = new DateTime(2023, 10, 12, 3, 27, 14, 965, DateTimeKind.Utc).AddTicks(4022),
+                            CreatedAt = new DateTime(2023, 10, 12, 3, 22, 19, 511, DateTimeKind.Utc).AddTicks(5327),
                             Details = "Etiam auctor pellentesque metus sit amet accumsan. Proin laoreet viverra nibh, eget eleifend dui condimentum pulvinar. Duis auctor in ipsum ut rutrum. Aliquam posuere sollicitudin quam. In in lobortis felis. Fusce ultricies, eros nec vestibulum pulvinar, ex massa interdum nunc, at pretium ipsum justo ac ex. Suspendisse ut luctus lectus. Proin congue sodales porta. Proin eleifend semper neque eu iaculis. Donec feugiat risus enim, vitae consectetur mauris porta id. Donec euismod, massa non porttitor tincidunt, diam dolor dignissim nisl",
                             ImageUrl = "",
                             Name = "Royal Villa",
@@ -83,7 +86,7 @@ namespace Resort_Web.Migrations
                         {
                             Id = 2,
                             Amenity = "",
-                            CreatedAt = new DateTime(2023, 10, 12, 3, 27, 14, 965, DateTimeKind.Utc).AddTicks(4025),
+                            CreatedAt = new DateTime(2023, 10, 12, 3, 22, 19, 511, DateTimeKind.Utc).AddTicks(5329),
                             Details = "Sed mollis odio in justo volutpat semper. Etiam eget interdum ipsum, id placerat dui. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus",
                             ImageUrl = "",
                             Name = "Diamond Villa",
@@ -96,7 +99,7 @@ namespace Resort_Web.Migrations
                         {
                             Id = 3,
                             Amenity = "",
-                            CreatedAt = new DateTime(2023, 10, 12, 3, 27, 14, 965, DateTimeKind.Utc).AddTicks(4027),
+                            CreatedAt = new DateTime(2023, 10, 12, 3, 22, 19, 511, DateTimeKind.Utc).AddTicks(5331),
                             Details = "Donec est lacus, pharetra sagittis eleifend ac, sodales sit amet tortor. Aliquam massa odio, ullamcorper sit amet tristique in, facilisis at libero. Aenean in magna mi. ",
                             ImageUrl = "",
                             Name = "Safire Royal Villa",
@@ -110,7 +113,10 @@ namespace Resort_Web.Migrations
             modelBuilder.Entity("Resort_Web.Models.VillaNumber", b =>
                 {
                     b.Property<int>("VillaNo")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VillaNo"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
